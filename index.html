@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报销单明细登记</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1920px;
+            width: 90%;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .card {
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .settings-card {
+            width: 50%;
+            margin: 0 auto;
+            margin-bottom: 30px; /* 添加下间距 */
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .form-group img {
+            max-width: 200px;
+            max-height: 200px;
+            display: block;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #summary, #total-summary {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 4px;
+        }
+        #summary p, #total-summary p {
+            margin: 0;
+            font-size: 16px;
+        }
+        #total-reimbursement {
+            color: #f5742f; /* 设为蓝色 */
+            font-weight: bold; /* 加粗字体 */
+        }
+        #download-card {
+            margin-left: 20px; /* 添加右边距 */
+        }
+        #generated-card {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card settings-card">
+        <h1>报销单明细登记</h1>
+
+        <form id="expense-form">
+            <div class="form-group">
+                <label for="region">地区</label>
+                <input type="text" id="region" name="region" placeholder="请输入地区">
+            </div>
+            <div class="form-group">
+                <label for="date">时间</label>
+                <input type="date" id="date" name="date">
+            </div>
+            <div class="form-group">
+                <label for="store-name" style="color: #f5742f; font-weight: bold;">店铺名称</label>
+                <input type="text" id="store-name" name="store-name" placeholder="请输入店铺名称">
+            </div>
+            <div class="form-group">
+                <label for="product-name">产品简称</label>
+                <input type="text" id="product-name" name="product-name" placeholder="请输入产品简称">
+            </div>
+            <div class="form-group">
+                <label for="product-id">产品ID</label>
+                <input type="text" id="product-id" name="product-id" placeholder="请输入产品ID">
+            </div>
+            <div class="form-group">
+                <label for="product-image">产品图片上传</label>
+                <input type="file" id="product-image" name="product-image" accept="image/*">
+                <img id="image-preview" src="" alt="Image Preview" style="display:none;">
+            </div>
+            <div class="form-group">
+                <label for="wangwang-id">旺旺ID</label>
+                <input type="text" id="wangwang-id" name="wangwang-id" placeholder="请输入旺旺ID">
+            </div>
+            <div class="form-group">
+                <label for="order-id">订单号</label>
+                <input type="text" id="order-id" name="order-id" placeholder="请输入订单号">
+            </div>
+            <div class="form-group">
+                <label for="delivery-info">收件信息</label>
+                <input type="text" id="delivery-info" name="delivery-info" placeholder="请输入收件信息">
+            </div>
+            <div class="form-group">
+                <label for="payment">实付款</label>
+                <input type="number" id="payment" name="payment" step="0.01" placeholder="请输入实付款">
+            </div>
+            <div class="form-group">
+                <label for="commission">佣金</label>
+                <input type="number" id="commission" name="commission" step="0.01" placeholder="请输入佣金">
+            </div>
+            <div class="form-group">
+                <label for="principal-commission">本金佣金</label>
+                <input type="number" id="principal-commission" name="principal-commission" step="0.01" readonly>
+            </div>
+
+            <button type="submit">添加明细</button>
+            <button type="button" id="download-card">下载卡片</button>
+        </form>
+    </div>
+
+    <div class="card" id="generated-card">
+        <h2>订单明细列表</h2>
+        <table id="expense-table">
+            <thead>
+                <tr>
+                    <th>地区</th>
+                    <th>时间</th>
+                    <th>店铺名称</th>
+                    <th>产品简称</th>
+                    <th>产品ID</th>
+                    <th>产品图片</th>
+                    <th>旺旺ID</th>
+                    <th>订单号</th>
+                    <th>收件信息</th>
+                    <th>实付款</th>
+                    <th>佣金</th>
+                    <th>本佣合计</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <div id="summary">
+            <h3>店铺明细</h3>
+            <p id="store-summary"></p>
+        </div>
+
+        <div id="total-summary">
+            <h3 style="font-size: 22px;">需要返款的总金额</h3>
+            <p id="total-reimbursement" style="font-size: 22px;">总金额：0.00 元</p>
+        </div>
+    </div>
+</div>
+
+<!-- 添加html2canvas库 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    const expenseForm = document.getElementById("expense-form");
+    const expenseTableBody = document.querySelector("#expense-table tbody");
+    const storeSummary = document.getElementById("store-summary");
+    const totalReimbursement = document.getElementById("total-reimbursement");
+    const productImageInput = document.getElementById("product-image");
+    const imagePreview = document.getElementById("image-preview");
+    const paymentInput = document.getElementById("payment");
+    const commissionInput = document.getElementById("commission");
+    const principalCommissionInput = document.getElementById("principal-commission");
+    const downloadCardButton = document.getElementById("download-card");
+    const generatedCard = document.getElementById("generated-card");
+
+    let storeData = {};  // Store data by store name
+    let totalAmount = 0; // Total reimbursement amount for all stores
+
+    // 图片预览功能
+    productImageInput.addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = "block"; // 显示图片
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.style.display = "none";
+        }
+    });
+
+    // 计算本金佣金
+    function updatePrincipalCommission() {
+        const payment = parseFloat(paymentInput.value) || 0;
+        const commission = parseFloat(commissionInput.value) || 0;
+        const principalCommission = payment + commission;
+        principalCommissionInput.value = principalCommission.toFixed(2);
+    }
+
+    // 实时计算本金佣金
+    paymentInput.addEventListener("input", updatePrincipalCommission);
+    commissionInput.addEventListener("input", updatePrincipalCommission);
+
+    expenseForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        // 获取表单数据
+        const region = document.getElementById("region").value;
+        const date = document.getElementById("date").value;
+        const storeName = document.getElementById("store-name").value;
+        const productName = document.getElementById("product-name").value;
+        const productId = document.getElementById("product-id").value;
+        const productImage = imagePreview.src;
+        const wangwangId = document.getElementById("wangwang-id").value;
+        const orderId = document.getElementById("order-id").value;
+        const deliveryInfo = document.getElementById("delivery-info").value;
+        const payment = parseFloat(document.getElementById("payment").value) || 0;
+        const commission = parseFloat(document.getElementById("commission").value) || 0;
+        const principalCommission = parseFloat(principalCommissionInput.value) || 0;
+
+        // 添加到表格
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${region}</td>
+            <td>${date}</td>
+            <td>${storeName}</td>
+            <td style="font-size: 12px; color: #b0b0b0;">${productName}</td>
+            <td style="font-size: 12px; color: #b0b0b0;">${productId}</td>
+            <td><img src="${productImage}" alt="Product Image" width="50" height="50"></td>
+            <td>${wangwangId}</td>
+            <td>${orderId}</td>
+            <td style="font-size: 12px; color: #b0b0b0;">${deliveryInfo}</td>
+            <td>${payment.toFixed(2)}</td>
+            <td>${commission.toFixed(2)}</td>
+            <td>${principalCommission.toFixed(2)}</td>
+        `;
+        expenseTableBody.appendChild(row);
+
+        // 更新店铺数据
+        if (!storeData[storeName]) {
+            storeData[storeName] = { totalPrincipal: 0, totalCommission: 0 };
+        }
+        storeData[storeName].totalPrincipal += payment;
+        storeData[storeName].totalCommission += commission;
+
+        // 更新统计
+        updateSummary();
+        updateTotalAmount();
+    });
+
+    function updateSummary() {
+        let summaryText = '';
+        totalAmount = 0; // Reset total amount before recalculating
+
+        for (const storeName in storeData) {
+            const totalPrincipal = storeData[storeName].totalPrincipal.toFixed(2);
+            const totalCommission = storeData[storeName].totalCommission.toFixed(2);
+            const totalRefund = (parseFloat(totalPrincipal) + parseFloat(totalCommission)).toFixed(2);
+            summaryText += `${storeName}，2025年1月7日，总本金${totalPrincipal}元，总佣金${totalCommission}元，总本佣合计${totalRefund}元。<br>`;
+
+            // 累加所有店铺的返款金额
+            totalAmount += parseFloat(totalRefund);
+        }
+
+        storeSummary.innerHTML = summaryText;
+        totalReimbursement.innerHTML = `返款总金额：${totalAmount.toFixed(2)} 元`;
+    }
+
+    // 下载卡片功能
+    downloadCardButton.addEventListener("click", function() {
+        const storeName = document.getElementById("store-name").value || "店铺名称";
+        const date = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
+
+        html2canvas(generatedCard).then(canvas => {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = fileName;
+            link.click();
+        });
+    });
+</script>
+
+</body>
+</html>
