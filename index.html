@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -172,12 +173,12 @@
             <thead>
                 <tr>
                     <th>地区</th>
-                    <th>时间</th>
+                    <th>日期</th>
                     <th>店铺名称</th>
                     <th>产品简称</th>
                     <th>产品ID</th>
                     <th>产品图片</th>
-                    <th>旺旺ID</th>
+                    <th>买家ID</th>
                     <th>订单号</th>
                     <th>收件信息</th>
                     <th>实付款</th>
@@ -195,8 +196,8 @@
         </div>
 
         <div id="total-summary">
-            <h3 style="font-size: 22px;">需要返款的总金额</h3>
-            <p id="total-reimbursement" style="font-size: 22px;">总金额：0.00 元</p>
+            <h3 style="font-size: 22px;">本次需要返款的总金额</h3>
+            <p id="total-reimbursement" style="font-size: 35px;">总金额：0.00 元</p>
         </div>
     </div>
 </div>
@@ -310,7 +311,7 @@
         }
 
         storeSummary.innerHTML = summaryText;
-        totalReimbursement.innerHTML = `返款总金额：${totalAmount.toFixed(2)} 元`;
+        totalReimbursement.innerHTML = `总金额：${totalAmount.toFixed(2)} 元`;
     }
 
     // 下载卡片功能
