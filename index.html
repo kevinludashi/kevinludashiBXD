@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>报销单明细登记 3.0</title>
+    <title>报销单明细登记 3.1</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -100,6 +100,7 @@
         }
         #generated-card {
             padding: 20px;
+            min-width: 1720px; /* 设置最小宽度 */
         }
     </style>
 </head>
@@ -322,7 +323,7 @@
             scale: window.devicePixelRatio,
             useCORS: true, // 确保跨域资源加载
             logging: true, // 启用日志以调试
-            width: generatedCard.scrollWidth, // 使用元素的实际宽度
+            width: 1920, // 设置宽度为1920px
             height: generatedCard.scrollHeight // 使用元素的实际高度
         }).then(canvas => {
             const link = document.createElement("a");
