@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>报销单明细登记</title>
+    <title>报销单明细登记 2.0 </title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -317,7 +317,10 @@
         const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
         const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
 
-        html2canvas(generatedCard, { scale: window.devicePixelRatio }).then(canvas => {
+        html2canvas(generatedCard, {
+            scale: window.devicePixelRatio,
+            useCORS: true // 确保跨域资源加载
+        }).then(canvas => {
             const link = document.createElement("a");
             link.href = canvas.toDataURL("image/png");
             link.download = fileName;
