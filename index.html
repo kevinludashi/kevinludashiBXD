@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>kevinludashi的报销单明细登记</title>
+    <title>报销单明细登记</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -300,7 +300,8 @@
             const totalPrincipal = storeData[storeName].totalPrincipal.toFixed(2);
             const totalCommission = storeData[storeName].totalCommission.toFixed(2);
             const totalRefund = (parseFloat(totalPrincipal) + parseFloat(totalCommission)).toFixed(2);
-            summaryText += `${storeName}，2025年1月7日，总本金${totalPrincipal}元，总佣金${totalCommission}元，总本佣合计${totalRefund}元。<br>`;
+            const date = document.getElementById("date").value; // 获取用户设置的日期
+            summaryText += `${storeName}，${date}，总本金${totalPrincipal}元，总佣金${totalCommission}元，总本佣合计${totalRefund}元。<br>`;
 
             // 累加所有店铺的返款金额
             totalAmount += parseFloat(totalRefund);
@@ -313,7 +314,7 @@
     // 下载卡片功能
     downloadCardButton.addEventListener("click", function() {
         const storeName = document.getElementById("store-name").value || "店铺名称";
-        const date = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
         const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
 
         html2canvas(generatedCard).then(canvas => {
