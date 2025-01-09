@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>报销单明细登记 3.2</title>
+    <title>报销单明细登记 3.3</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -342,18 +342,22 @@
     }
 
     // 下载卡片功能
-    downloadCardButton.addEventListener("click", function() {
-        const storeName = document.getElementById("store-name").value || "店铺名称";
-        const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-        const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
-
-        html2canvas(generatedCard).then(canvas => {
-            const link = document.createElement("a");
-            link.href = canvas.toDataURL("image/png");
-            link.download = fileName;
-            link.click();
+        downloadCardButton.addEventListener("click", function() {
+            const orderDetails = document.getElementById("order-details");
+            const storeName = document.getElementById("store-name").value || "店铺名称";
+            const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+            const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
+    
+            html2canvas(orderDetails, {
+                width: orderDetails.scrollWidth,
+                windowWidth: orderDetails.scrollWidth
+            }).then(canvas => {
+                const link = document.createElement("a");
+                link.href = canvas.toDataURL("image/png");
+                link.download = fileName;
+                link.click();
+            });
         });
-    });
 </script>
 
 </body>
