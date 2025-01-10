@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>报销单明细登记 3.3</title>
+    <title>报销单明细登记 3.6</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -25,7 +25,7 @@
             margin-bottom: 20px;
         }
         .settings-card {
-            width: 50%;
+            width: 90%;
             margin: 0 auto;
             margin-bottom: 30px; /* 添加下间距 */
         }
@@ -76,6 +76,10 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            margin-right: 20px; /* 每个按钮右边间距20px */
+        }
+        button:last-child {
+            margin-right: 0; /* 最后一个按钮没有右边距 */
         }
         button:hover {
             background-color: #45a049;
@@ -94,11 +98,14 @@
             color: #f5742f; /* 设为蓝色 */
             font-weight: bold; /* 加粗字体 */
         }
-        #download-card {
-            margin-left: 20px; /* 添加右边距 */
+        #button-group {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
         }
         #generated-card {
             padding: 20px;
+            min-width: 1620px; /* 设置最小宽度 */
         }
         #remark {
             margin-top: 20px;
@@ -174,8 +181,12 @@
                 <input type="number" id="principal-commission" name="principal-commission" step="0.01" readonly>
             </div>
 
-            <button type="submit">添加明细</button>
-            <button type="button" id="download-card">下载卡片</button>
+            <div id="button-group">
+                <button type="submit">添加明细</button>
+                <button type="button" id="download-card">下载卡片</button>
+                <button type="button" id="export-data">导出默认数据</button>
+                <button type="button" id="import-data">导入默认数据</button>
+            </div>
         </form>
     </div>
 
@@ -234,6 +245,8 @@
     const commissionInput = document.getElementById("commission");
     const principalCommissionInput = document.getElementById("principal-commission");
     const downloadCardButton = document.getElementById("download-card");
+    const exportDataButton = document.getElementById("export-data");
+    const importDataButton = document.getElementById("import-data");
     const generatedCard = document.getElementById("generated-card");
     const remarkText = document.getElementById("remark-text");
 
@@ -342,22 +355,79 @@
     }
 
     // 下载卡片功能
-        downloadCardButton.addEventListener("click", function() {
-            const orderDetails = document.getElementById("order-details");
-            const storeName = document.getElementById("store-name").value || "店铺名称";
-            const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-            const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
-    
-            html2canvas(orderDetails, {
-                width: orderDetails.scrollWidth,
-                windowWidth: orderDetails.scrollWidth
-            }).then(canvas => {
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = fileName;
-                link.click();
-            });
+    downloadCardButton.addEventListener("click", function() {
+        const generatedCard = document.getElementById("generated-card"); // 使用存在的 DOM 元素
+        const storeName = document.getElementById("store-name").value || "店铺名称";
+        const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
+
+        html2canvas(generatedCard, {
+            width: 1660, // 设置最小宽度
+            windowWidth: 1660 // 设置最小宽度
+        }).then(canvas => {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = fileName;
+            link.click();
         });
+    });
+
+    // 导出默认数据功能
+    exportDataButton.addEventListener("click", function() {
+        const region = document.getElementById("region").value || "地区";
+        const storeName = document.getElementById("store-name").value || "店铺名";
+        const productName = document.getElementById("product-name").value || "商品简称";
+        const productId = document.getElementById("product-id").value || "商品ID";
+        
+        const defaultData = {
+            region: region,
+            date: document.getElementById("date").value,
+            storeName: storeName,
+            productName: productName,
+            productId: productId,
+            wangwangId: document.getElementById("wangwang-id").value,
+            orderId: document.getElementById("order-id").value,
+            deliveryInfo: document.getElementById("delivery-info").value,
+            payment: document.getElementById("payment").value,
+            commission: document.getElementById("commission").value
+        };
+        
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(defaultData));
+        const fileName = `${region}-${storeName}-${productName}-${productId}.json`;
+        const link = document.createElement("a");
+        link.href = dataStr;
+        link.download = fileName;
+        link.click();
+    });
+
+    // 导入默认数据功能
+    importDataButton.addEventListener("click", function() {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json";
+        input.onchange = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const importedData = JSON.parse(e.target.result);
+                    document.getElementById("region").value = importedData.region;
+                    document.getElementById("date").value = importedData.date;
+                    document.getElementById("store-name").value = importedData.storeName;
+                    document.getElementById("product-name").value = importedData.productName;
+                    document.getElementById("product-id").value = importedData.productId;
+                    document.getElementById("wangwang-id").value = importedData.wangwangId;
+                    document.getElementById("order-id").value = importedData.orderId;
+                    document.getElementById("delivery-info").value = importedData.deliveryInfo;
+                    document.getElementById("payment").value = importedData.payment;
+                    document.getElementById("commission").value = importedData.commission;
+                    updatePrincipalCommission();
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    });
 </script>
 
 </body>
