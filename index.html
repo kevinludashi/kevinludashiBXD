@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>报销单明细登记 3.61</title>
+    <title>报销单明细登记 3.62</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -84,19 +84,15 @@
         button:hover {
             background-color: #45a049;
         }
-        #summary, #total-summary {
+        #summary {
             margin-top: 20px;
             padding: 10px;
             background-color: #f4f4f4;
             border-radius: 4px;
         }
-        #summary p, #total-summary p {
+        #summary p {
             margin: 0;
             font-size: 16px;
-        }
-        #total-reimbursement {
-            color: #f5742f; /* 设为蓝色 */
-            font-weight: bold; /* 加粗字体 */
         }
         #button-group {
             display: flex;
@@ -114,14 +110,19 @@
             border-radius: 4px;
             font-size: 14px; /* 字体大小调整 */
             color: #333;
-            opacity: 0.7; /* 透明度调整 */
+            opacity: 0.9; /* 透明度调整 */
         }
         #remark-title {
-            font-size: 14px; /* 字体大小调整 */
-            opacity: 0.7; /* 透明度调整 */
-            font-weight: bold; /* 加粗 */
             margin-bottom: 10px; /* 添加下间距 */
         }
+        #order-summary-title {
+            font-size: 22px; /* 订单明细列表标题缩小字号 */
+        }
+		.shrink-opacity {
+		    font-size: 16px;/* 订单明细列表标题缩小字号 */
+		    opacity: 0.7;
+			font-weight: 300;
+		}
     </style>
 </head>
 <body>
@@ -191,7 +192,7 @@
     </div>
 
     <div class="card" id="generated-card">
-        <h2>订单明细列表</h2>
+        <h2 id="order-summary-title">订单明细列表</h2>
         <table id="expense-table">
             <thead>
                 <tr>
@@ -220,13 +221,8 @@
 
         <div id="remark">
             <!-- 备注信息将显示在这里 -->
-            <p id="remark-title">总结</p>
-            <p id="remark-text"></p>
-        </div>
-
-        <div id="total-summary">
-            <h3 style="font-size: 22px;">本次需要（返款/报销）的总金额</h3>
-            <p id="total-reimbursement" style="font-size: 32px;">总金额：0.00 元</p>
+            <p id="remark-title" style="font-size: 22px; font-weight: bold; color: black;">本次需要（返款/报销）的总金额</p>
+            <p id="remark-text" style="font-size: 32px; color: #f5742f; font-weight: bold;"></p>
         </div>
     </div>
 </div>
@@ -238,7 +234,6 @@
     const expenseForm = document.getElementById("expense-form");
     const expenseTableBody = document.querySelector("#expense-table tbody");
     const storeSummary = document.getElementById("store-summary");
-    const totalReimbursement = document.getElementById("total-reimbursement");
     const productImageInput = document.getElementById("product-image");
     const imagePreview = document.getElementById("image-preview");
     const paymentInput = document.getElementById("payment");
@@ -249,9 +244,9 @@
     const importDataButton = document.getElementById("import-data");
     const generatedCard = document.getElementById("generated-card");
     const remarkText = document.getElementById("remark-text");
+    const orderSummaryTitle = document.getElementById("order-summary-title");
 
     let storeData = {};  // Store data by store name
-    let totalAmount = 0; // Total reimbursement amount for all stores
 
     // 图片预览功能
     productImageInput.addEventListener("change", function(event) {
@@ -328,49 +323,53 @@
 
     function updateSummary() {
         let summaryText = '';
-        totalAmount = 0; // Reset total amount before recalculating
+        let totalAmount = 0; // Reset total amount before recalculating
 
         for (const storeName in storeData) {
             const totalPrincipal = storeData[storeName].totalPrincipal.toFixed(2);
             const totalCommission = storeData[storeName].totalCommission.toFixed(2);
             const totalRefund = (parseFloat(totalPrincipal) + parseFloat(totalCommission)).toFixed(2);
             const date = document.getElementById("date").value; // 获取用户设置的日期
-            summaryText += `${storeName}，${date}，总本金${totalPrincipal}元，总佣金${totalCommission}元，总本佣合计${totalRefund}元。<br>`;
+            summaryText += `${storeName}，${date}，总本金${totalPrincipal}元，总佣金${totalCommission}元，总本佣合计：${totalRefund}元。<br>`;
 
             // 累加所有店铺的返款金额
             totalAmount += parseFloat(totalRefund);
         }
 
         storeSummary.innerHTML = summaryText;
-        totalReimbursement.innerHTML = `总金额：${totalAmount.toFixed(2)} 元`;
+
+        // 更新订单明细列表标题
+        const date = document.getElementById("date").value;
+        const storeNamesJoined = Object.keys(storeData).join("、");
+        orderSummaryTitle.innerHTML = `订单列表明细<span class="shrink-opacity">（${date}【${storeNamesJoined}】补单明细报销凭证）</span>`;
 
         // 更新备注
-        updateRemark(document.getElementById("date").value, Object.keys(storeData), totalAmount);
+        updateRemark(date, Object.keys(storeData), totalAmount);
     }
 
     function updateRemark(date, storeNames, totalAmount) {
         const storeNamesJoined = storeNames.join("、");
-        const remark = `${date}，${storeNamesJoined}，本佣总合计${totalAmount.toFixed(2)}元整`;
+        const remark = `${date}【${storeNamesJoined}】本佣总合计：${totalAmount.toFixed(2)}元整`;
         remarkText.innerHTML = remark;
     }
 
     // 下载卡片功能
-        downloadCardButton.addEventListener("click", function() {
-            const generatedCard = document.getElementById("generated-card"); // 使用存在的 DOM 元素
-            const storeName = document.getElementById("store-name").value || "店铺名称";
-            const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-            const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
-    
-            html2canvas(generatedCard, {
-                width: 1660, // 设置最小宽度
-                windowWidth: 1660 // 设置最小宽度
-            }).then(canvas => {
-                const link = document.createElement("a");
-                link.href = canvas.toDataURL("image/png");
-                link.download = fileName;
-                link.click();
-            });
+    downloadCardButton.addEventListener("click", function() {
+        const generatedCard = document.getElementById("generated-card"); // 使用存在的 DOM 元素
+        const storeName = document.getElementById("store-name").value || "店铺名称";
+        const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
+
+        html2canvas(generatedCard, {
+            width: 1660, // 设置最小宽度
+            windowWidth: 1660 // 设置最小宽度
+        }).then(canvas => {
+            const link = document.createElement("a");
+            link.href = canvas.toDataURL("image/png");
+            link.download = fileName;
+            link.click();
         });
+    });
 
     // 导出默认数据功能
     exportDataButton.addEventListener("click", function() {
