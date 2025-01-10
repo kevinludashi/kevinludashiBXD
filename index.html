@@ -355,21 +355,21 @@
 
     // 下载卡片功能
     downloadCardButton.addEventListener("click", function() {
-        const generatedCard = document.getElementById("generated-card"); // 使用存在的 DOM 元素
-        const storeName = document.getElementById("store-name").value || "店铺名称";
-        const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-        const fileName = `${date}-${storeName}-补单明细报销凭证.png`;
+    const generatedCard = document.getElementById("generated-card"); // Using existing DOM element
+    const date = document.getElementById("date").value || new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+    const storeNames = Object.keys(storeData).join("、") || "店铺名称";
+    const fileName = `${date}-${storeNames}-补单明细报销凭证.png`;
 
-        html2canvas(generatedCard, {
-            width: 1660, // 设置最小宽度
-            windowWidth: 1660 // 设置最小宽度
-        }).then(canvas => {
-            const link = document.createElement("a");
-            link.href = canvas.toDataURL("image/png");
-            link.download = fileName;
-            link.click();
-        });
+    html2canvas(generatedCard, {
+        width: 1660, // Set minimum width
+        windowWidth: 1660 // Set minimum width
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = fileName;
+        link.click();
     });
+});
 
     // 导出默认数据功能
     exportDataButton.addEventListener("click", function() {
